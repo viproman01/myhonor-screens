@@ -18,15 +18,15 @@ const P = new URLSearchParams(location.search);
 const PHOTO_SEC = +(P.get('photo')||8);
 const NIGHT = P.get('night')||'21-9';
 const PLAYLIST = [
-  {t:'v',s:'/media/video-05.mp4'},
-  {t:'p',s:'/media/photo-01.jpg'},{t:'p',s:'/media/photo-02.jpg'},{t:'p',s:'/media/photo-03.jpg'},
-  {t:'v',s:'/media/video-03.mp4'},
-  {t:'p',s:'/media/photo-04.jpg'},{t:'p',s:'/media/photo-05.jpg'},{t:'p',s:'/media/photo-06.jpg'},
-  {t:'v',s:'/media/video-04.mp4'},
-  {t:'p',s:'/media/photo-07.jpg'},{t:'p',s:'/media/photo-08.jpg'},{t:'p',s:'/media/photo-09.jpg'},
-  {t:'v',s:'/media/video-01.mp4'},
-  {t:'p',s:'/media/photo-10.jpg'},{t:'p',s:'/media/photo-11.jpg'},
-  {t:'v',s:'/media/video-02.mp4'}
+  {t:'v',s:'../media/video-05.mp4'},
+  {t:'p',s:'../media/photo-01.jpg'},{t:'p',s:'../media/photo-02.jpg'},{t:'p',s:'../media/photo-03.jpg'},
+  {t:'v',s:'../media/video-03.mp4'},
+  {t:'p',s:'../media/photo-04.jpg'},{t:'p',s:'../media/photo-05.jpg'},{t:'p',s:'../media/photo-06.jpg'},
+  {t:'v',s:'../media/video-04.mp4'},
+  {t:'p',s:'../media/photo-07.jpg'},{t:'p',s:'../media/photo-08.jpg'},{t:'p',s:'../media/photo-09.jpg'},
+  {t:'v',s:'../media/video-01.mp4'},
+  {t:'p',s:'../media/photo-10.jpg'},{t:'p',s:'../media/photo-11.jpg'},
+  {t:'v',s:'../media/video-02.mp4'}
 ];
 const stage=document.getElementById('stage');let i=0,timer=null,cur=null;
 function isNight(){ if(NIGHT==='off')return false; const [a,b]=NIGHT.split('-').map(Number); const h=new Date().getHours(); return a>b ? (h>=a||h<b) : (h>=a&&h<b); }
