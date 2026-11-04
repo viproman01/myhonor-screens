@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,802929,e=>{"use strict";var t=e.i(271645),r=e.i(75125);e.s(["CategoryViewTracker",0,function({ids:e}){let u=e.join(","),c=(0,t.useRef)(null);return(0,t.useEffect)(()=>{0===e.length||c.current!==u&&(c.current=u,(0,r.trackViewCategory)(e))},[e,u]),null}])}]);
