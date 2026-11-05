@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Meta / Facebook catalog crawler
+User-agent: facebookexternalhit
+Allow: /facebook-feed.xml
+Allow: /
+
+Sitemap: https://myhonor.shop/sitemap.xml
