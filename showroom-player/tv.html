@@ -13,6 +13,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none}
 </style></head><body>
 <div id="stage"></div>
 <div id="hint">Коснитесь экрана один раз — полноэкранный режим</div>
+<script src="/b/media-files.js?v=a911b01a76814304"></script>
 <script src="/screens/player/rotation.js?v=be4b256f3c3baeb5"></script>
 <script>
 // Плеер телевизора (экран b). Chrome 88+.
@@ -298,6 +299,54 @@ function tryPlay(v){
   }
 }
 
+const hdFiles = window.HonorTvFiles || {};
+const localFiles = new Set(Object.keys(hdFiles).concat(Object.values(hdFiles)));
+function tvWorkerActive(){
+  const sw = navigator.serviceWorker && navigator.serviceWorker.controller;
+  return sw && new URL(sw.scriptURL).pathname === '/b/media-cache.js';
+}
+function playable(src){
+  return localFiles.has(assetPath(src)) && tvWorkerActive() ? src + '?tv-cache=1' : src;
+}
+let hdCapable = false;
+let retryHD = 0;
+try { retryHD = Number(sessionStorage.getItem('honor-tv-hd-retry')) || 0; } catch (_) {}
+function pauseHD(){
+  retryHD = Date.now() + 30 * 60 * 1000;
+  try { sessionStorage.setItem('honor-tv-hd-retry', String(retryHD)); } catch (_) {}
+}
+async function checkDisplay(){
+  const ratio = window.devicePixelRatio || 1;
+  if (Math.max(screen.width, innerWidth) * ratio <= 1280 ||
+      Math.max(screen.height, innerHeight) * ratio <= 720) return;
+  if (navigator.connection && navigator.connection.saveData) return;
+  const type = 'video/mp4; codecs="avc1.640028"';
+  if (!document.createElement('video').canPlayType(type)) return;
+  hdCapable = true;
+  if (navigator.mediaCapabilities && navigator.mediaCapabilities.decodingInfo) {
+    try {
+      const info = await navigator.mediaCapabilities.decodingInfo({type:'file',
+        video:{contentType:type, width:1920, height:1080, bitrate:2100000, framerate:30}});
+      hdCapable = info.supported && info.smooth;
+    } catch (_) { /* Actual playback is also monitored below. */ }
+  }
+}
+async function startMediaCache(){
+  if (!navigator.serviceWorker) return;
+  try {
+    const sw = navigator.serviceWorker;
+    const registration = await sw.register('/b/media-cache.js?v=470ce4d6970d5e28', {scope:'/b/',updateViaCache:'none'});
+    if (!registration || tvWorkerActive()) return;
+    await new Promise(resolve => {
+      function finish(){ sw.removeEventListener('controllerchange', changed); clearTimeout(timer); resolve(); }
+      function changed(){ if (tvWorkerActive()) finish(); }
+      const timer = setTimeout(finish, 900);
+      sw.addEventListener('controllerchange', changed);
+      changed();
+    });
+  } catch (_) { /* Native HTTP playback remains available. */ }
+}
+
 function playFullscreen(urls, then, mosaic){
   if (stopped) return;
   if (!urls || !urls.length) { then(); return; }
@@ -307,16 +356,53 @@ function playFullscreen(urls, then, mosaic){
     if (idx >= urls.length) { then(); return; }
     clearStage();
     var src = urls[idx++];
-    var v = makeVideo(src);
-    v.className = mosaic ? 'hs-fill hs-mosaic' : 'hs-fill';
-    var advanced = false;
-    function go(){ if (advanced || stopped || v.parentNode !== stage) return; advanced = true; next(); }
-    v.addEventListener('ended', go);
-    v.addEventListener('error', function(){ later(go, 400); });
-    stage.appendChild(v);
-    HonorRotation.watchPlayback(v, function(){ return !advanced && !stopped && v.parentNode === stage; }, go);
-    tryPlay(v);
+    var high = hdCapable && Date.now() >= retryHD && hdFiles[assetPath(src)];
+    show(high || src, !!high, 0);
 
+    function show(url, isHD, at){
+      const v = makeVideo(playable(url));
+      v.className = mosaic ? 'hs-fill hs-mosaic' : 'hs-fill';
+      let advanced = false;
+      let timer;
+      let checkpoint = 0, frames = 0, drops = 0;
+      function current(){ return !advanced && !stopped && v.parentNode === stage; }
+      function finish(){ if (!current()) return; advanced = true; clearTimeout(timer); next(); }
+      function fallback(){
+        if (!current()) return;
+        if (!isHD) { finish(); return; }
+        advanced = true;
+        clearTimeout(timer);
+        pauseHD();
+        const position = v.currentTime || at;
+        releaseVideo(v);
+        show(src, false, position);
+      }
+      if (at > 0) v.addEventListener('loadedmetadata', function(){
+        if (current() && at < v.duration - 0.3) v.currentTime = at;
+      }, {once:true});
+      if (isHD) {
+        function watchBuffer(){
+          clearTimeout(timer);
+          timer = setTimeout(fallback, v.currentTime > 0 ? 3000 : 7000);
+        }
+        v.addEventListener('waiting', watchBuffer);
+        v.addEventListener('playing', function(){ clearTimeout(timer); });
+        v.addEventListener('timeupdate', function(){
+          if (!v.getVideoPlaybackQuality || !current()) return;
+          if (v.currentTime - checkpoint < 4) return;
+          const q = v.getVideoPlaybackQuality();
+          const total = q.totalVideoFrames - frames, lost = q.droppedVideoFrames - drops;
+          checkpoint = v.currentTime; frames = q.totalVideoFrames; drops = q.droppedVideoFrames;
+          if (total > 60 && lost / total > 0.1) fallback();
+        });
+        watchBuffer();
+      }
+      v.addEventListener('ended', finish);
+      v.addEventListener('error', function(){ if (current()) later(fallback, 250); });
+      stage.appendChild(v);
+      HonorRotation.watchPlayback(v, current, fallback);
+      tryPlay(v);
+    }
   }
   next();
 }
@@ -416,7 +502,11 @@ document.addEventListener('click', function(){
   if (!document.fullscreenElement && e.requestFullscreen) e.requestFullscreen().catch(function(){});
 });
 setTimeout(function(){ location.reload(); }, 3600 * 1000);
-syncTimeFirst().then(function(){
+// The first frame must never depend on service worker support or storage access.
+Promise.all([syncTimeFirst(), Promise.race([
+  Promise.all([startMediaCache(), checkDisplay()]),
+  new Promise(resolve => setTimeout(resolve, 1200))
+])]).then(function(){
   HonorRotation.manage('b', function(media) {
     setTvProgram(media.wideVideos, media.videos);
     managedBlackout = media.blackout;
