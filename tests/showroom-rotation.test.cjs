@@ -35,3 +35,40 @@ test('asynchronous column changes exclude the other two clips and the previous c
   }
   assert.equal(seen.size, newPortraits.length);
 });
+
+test('managed programs require safe media and preserve the number of distinct TV windows', () => {
+  const {normalize} = require('../showroom-player/rotation.js').HonorRotation;
+  global.location = {origin: 'https://myhonor.shop'};
+  try {
+    const input = {schema:1, code:'b', blackout:false, version:'v1', photoSeconds:8,
+      wideVideos:['/media/wide.mp4'], videos:[], photos:[]};
+    assert.deepEqual(normalize(input,'b').wideVideos,['https://myhonor.shop/media/wide.mp4']);
+    assert.equal(normalize(input,'c'),null);
+    assert.equal(normalize({...input, videos:['/media/a','/media/b','/media/b']},'b'),null);
+    assert.equal(normalize({...input, wideVideos:['javascript:void(0)']},'b'),null);
+    assert.equal(normalize({...input, wideVideos:['/admin/secret']},'b'),null);
+    assert.equal(normalize({...input, wideVideos:['/media/../admin/secret']},'b'),null);
+    assert.equal(normalize({...input, wideVideos:['https://user:pwd@example.org/']},'b'),null);
+    assert.equal(normalize({...input, code:'c', videos:[], photos:['/media/img.jpg']},'c').photos.length,1);
+  } finally { delete global.location; }
+});
+
+test('each single-stream TV round includes all twelve portraits in disjoint three-column packs', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const tv = fs.readFileSync(path.join(__dirname, '../showroom-player/tv.html'),'utf8');
+  const manifest = JSON.parse(tv.match(/var TV_MEDIA = (\{[\s\S]*?\n\});/)[1]);
+  const ids = Object.keys(manifest.vertical).sort();
+  assert.equal(ids.length, 12);
+  assert.equal(Object.keys(manifest.wide).length, 4);
+  assert.equal(manifest.rounds.length, 3);
+  for (const round of manifest.rounds) {
+    assert.deepEqual(round.flatMap(pack => pack.lanes.flat()).sort(),ids);
+    for (const pack of round) {
+      assert.equal(pack.lanes.length,3);
+      assert.match(pack.url,/^\/screens\/promo\/tv-mosaic-.*\.mp4$/);
+      assert.ok(pack.lanes.every(lane => lane.length === 2));
+      assert.equal(new Set(pack.lanes.flat()).size,6);
+    }
+  }
+});
