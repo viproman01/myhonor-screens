@@ -22,21 +22,23 @@ const code = location.pathname.split('/')[1] === 'c2' ? 'c2' : 'c';
 document.documentElement.classList.add('panel-' + code);
 document.title = 'HONOR — экран ' + code;
 const P = new URLSearchParams(location.search);
-const PHOTO_SEC = +(P.get('photo')||8);
+let photoSeconds = 8;
+const photoOverride = Number(P.get('photo')) || 0;
+let managedBlackout = false;
 const NIGHT = P.get('night')||'21-9';
-const photoUrls = Array.from({length: 11}, function(_, i) {
+let photoUrls = Array.from({length: 11}, function(_, i) {
   return '/media/photo-' + String(i + 1).padStart(2, '0') + '.jpg';
 });
-const videoUrls = ['05','03','04','01','02'].map(function(code) {
+let videoUrls = ['05','03','04','01','02'].map(function(code) {
   return '/media/video-' + code + '.mp4';
 }).concat(HonorRotation.newPortraits);
-const nextPhoto = HonorRotation.deck(photoUrls);
-const nextVideo = HonorRotation.deck(videoUrls);
+let nextPhoto = HonorRotation.deck(photoUrls);
+let nextVideo = HonorRotation.deck(videoUrls);
 let showVideo = true;
 const stage = document.getElementById('stage');
 let timer = null, cur = null, pending = null, clockOffset = 0, sleeping = false;
 function almatyHour(){ return (new Date(Date.now()+clockOffset).getUTCHours()+5)%24; }
-function isNight(){ if(NIGHT==='off')return false; var parts=NIGHT.split('-'); var a=+parts[0],b=+parts[1]; var h=almatyHour(); return a>b ? (h>=a||h<b) : (h>=a&&h<b); }
+function isNight(){ if(managedBlackout)return true; if(NIGHT==='off')return false; var parts=NIGHT.split('-'); var a=+parts[0],b=+parts[1]; var h=almatyHour(); return a>b ? (h>=a||h<b) : (h>=a&&h<b); }
 function syncTime(){
   return fetch(location.href,{method:'HEAD',cache:'no-store'}).then(function(r){
     var serverMs=Date.parse(r.headers.get('Date')||'');
@@ -62,8 +64,9 @@ function show() {
   clearTimeout(timer);
   dispose(pending); pending = null;
   if (isNight()) { setNight(); return; }
-  const video = showVideo;
-  showVideo = !showVideo;
+  if (!videoUrls.length && !photoUrls.length) { dispose(cur); cur = null; return; }
+  const video = videoUrls.length > 0 && (showVideo || !photoUrls.length);
+  showVideo = !video;
   const el = video ? document.createElement('video') : new Image();
   pending = el;
   el.className = 'layer';
@@ -82,7 +85,7 @@ function show() {
       function active(){ return cur === el && !pending && !sleeping; }
       HonorRotation.watchPlayback(el, active, show);
       el.play().catch(function(){ if (active()) show(); });
-    } else timer = setTimeout(show, PHOTO_SEC * 1000);
+    } else timer = setTimeout(show, (photoOverride > 0 ? photoOverride : photoSeconds) * 1000);
   }
   el.onerror = function(){
     if (pending === el || (cur === el && !pending)) { clearTimeout(timer); timer = setTimeout(show, 500); }
@@ -101,8 +104,20 @@ function setNight() {
     dispose(pending); dispose(cur); pending = cur = null;
   } else if (sleeping) { sleeping = false; show(); }
 }
-setInterval(setNight, 1000);
+
 document.addEventListener('click',function(){ var e=document.documentElement; if(!document.fullscreenElement&&e.requestFullscreen)e.requestFullscreen().catch(function(){}); });
 setTimeout(function(){location.reload();}, 3600*1000);
-syncTimeFirst().then(function(){ show(); });
+syncTimeFirst().then(function(){
+  setInterval(setNight, 1000);
+  HonorRotation.manage(code, function(media) {
+    videoUrls = media.videos; photoUrls = media.photos;
+    nextPhoto = HonorRotation.deck(photoUrls); nextVideo = HonorRotation.deck(videoUrls);
+    managedBlackout = media.blackout; photoSeconds = media.photoSeconds;
+  }, function() {
+    clearTimeout(timer);
+    dispose(cur); dispose(pending); cur = pending = null;
+    sleeping = false; showVideo = true;
+    show();
+  });
+});
 </script></body></html>

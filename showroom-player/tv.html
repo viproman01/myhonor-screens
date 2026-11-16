@@ -37,7 +37,140 @@ var VERT = [
   '/screens/promo/video-02.tv.mp4',
   '/screens/promo/img_4404.tv.mp4'
 ];
-var COL_OFFSETS = [0, 5, 10];
+// Produced from the public clip files; a pack is used only while every source
+// belongs to the current admin playlist. New/custom programs still take effect.
+var TV_MEDIA = {
+  "wide": {
+    "/screens/promo/2026-10-15-bf83aaae7f0c.tv.mp4": "/screens/promo/lite-2026-10-15-bf83aaae7f0c-963c0353914d.mp4",
+    "/screens/promo/honor-ad-wide.tv.mp4": "/screens/promo/lite-honor-ad-wide-de4a1522ea0f.mp4",
+    "/screens/promo/honor-tv-three-columns-muted-57s.tv.mp4": "/screens/promo/lite-honor-tv-three-columns-muted-57s-8c73af4a8956.mp4",
+    "/screens/promo/tv_notext_16x9.tv.mp4": "/screens/promo/lite-tv_notext_16x9-26ee94bd6e44.mp4"
+  },
+  "vertical": {
+    "/screens/promo/img_4404.tv.mp4": "/screens/promo/lite-img_4404-a02957c0dc73.mp4",
+    "/screens/promo/nov16-img-5220-a6c06b6e97.mp4": "/screens/promo/lite-nov16-img-5220-a6c06b6e97-e149524fe965.mp4",
+    "/screens/promo/nov16-img-5222-7c4b0d0249.mp4": "/screens/promo/lite-nov16-img-5222-7c4b0d0249-661d918dc457.mp4",
+    "/screens/promo/nov16-img-5228-cf30cc2be2.mp4": "/screens/promo/lite-nov16-img-5228-cf30cc2be2-4a08d4a42006.mp4",
+    "/screens/promo/nov16-img-5399-9752e06646.mp4": "/screens/promo/lite-nov16-img-5399-9752e06646-921e9a5604a6.mp4",
+    "/screens/promo/nov16-img-5432-53f500d674.mp4": "/screens/promo/lite-nov16-img-5432-53f500d674-138a7795d210.mp4",
+    "/screens/promo/nov16-img-5434-21ad1ee1cf.mp4": "/screens/promo/lite-nov16-img-5434-21ad1ee1cf-f53feab757ff.mp4",
+    "/screens/promo/video-01.tv.mp4": "/screens/promo/lite-video-01-db83562aff19.mp4",
+    "/screens/promo/video-02.tv.mp4": "/screens/promo/lite-video-02-5cc462ecc3ec.mp4",
+    "/screens/promo/video-03.tv.mp4": "/screens/promo/lite-video-03-d8e198c3f7ef.mp4",
+    "/screens/promo/video-04.tv.mp4": "/screens/promo/lite-video-04-b99c067d2e6a.mp4",
+    "/screens/promo/video-05.tv.mp4": "/screens/promo/lite-video-05-3e7e8dbdfec2.mp4"
+  },
+  "rounds": [
+    [
+      {
+        "url": "/screens/promo/tv-mosaic-r1g1-7b7aaf0af8fc.mp4",
+        "lanes": [
+          [
+            "/screens/promo/video-03.tv.mp4",
+            "/screens/promo/nov16-img-5432-53f500d674.mp4"
+          ],
+          [
+            "/screens/promo/img_4404.tv.mp4",
+            "/screens/promo/video-04.tv.mp4"
+          ],
+          [
+            "/screens/promo/nov16-img-5399-9752e06646.mp4",
+            "/screens/promo/nov16-img-5222-7c4b0d0249.mp4"
+          ]
+        ]
+      },
+      {
+        "url": "/screens/promo/tv-mosaic-r1g2-5c837609e2ee.mp4",
+        "lanes": [
+          [
+            "/screens/promo/nov16-img-5434-21ad1ee1cf.mp4",
+            "/screens/promo/video-05.tv.mp4"
+          ],
+          [
+            "/screens/promo/nov16-img-5228-cf30cc2be2.mp4",
+            "/screens/promo/nov16-img-5220-a6c06b6e97.mp4"
+          ],
+          [
+            "/screens/promo/video-01.tv.mp4",
+            "/screens/promo/video-02.tv.mp4"
+          ]
+        ]
+      }
+    ],
+    [
+      {
+        "url": "/screens/promo/tv-mosaic-r2g1-2f9afa392289.mp4",
+        "lanes": [
+          [
+            "/screens/promo/video-03.tv.mp4",
+            "/screens/promo/video-02.tv.mp4"
+          ],
+          [
+            "/screens/promo/nov16-img-5228-cf30cc2be2.mp4",
+            "/screens/promo/nov16-img-5222-7c4b0d0249.mp4"
+          ],
+          [
+            "/screens/promo/video-05.tv.mp4",
+            "/screens/promo/video-04.tv.mp4"
+          ]
+        ]
+      },
+      {
+        "url": "/screens/promo/tv-mosaic-r2g2-93a7ec3f8f96.mp4",
+        "lanes": [
+          [
+            "/screens/promo/nov16-img-5432-53f500d674.mp4",
+            "/screens/promo/nov16-img-5434-21ad1ee1cf.mp4"
+          ],
+          [
+            "/screens/promo/img_4404.tv.mp4",
+            "/screens/promo/video-01.tv.mp4"
+          ],
+          [
+            "/screens/promo/nov16-img-5220-a6c06b6e97.mp4",
+            "/screens/promo/nov16-img-5399-9752e06646.mp4"
+          ]
+        ]
+      }
+    ],
+    [
+      {
+        "url": "/screens/promo/tv-mosaic-r3g1-a0560729ca32.mp4",
+        "lanes": [
+          [
+            "/screens/promo/nov16-img-5434-21ad1ee1cf.mp4",
+            "/screens/promo/video-01.tv.mp4"
+          ],
+          [
+            "/screens/promo/nov16-img-5228-cf30cc2be2.mp4",
+            "/screens/promo/img_4404.tv.mp4"
+          ],
+          [
+            "/screens/promo/video-05.tv.mp4",
+            "/screens/promo/nov16-img-5399-9752e06646.mp4"
+          ]
+        ]
+      },
+      {
+        "url": "/screens/promo/tv-mosaic-r3g2-792f2070176b.mp4",
+        "lanes": [
+          [
+            "/screens/promo/nov16-img-5222-7c4b0d0249.mp4",
+            "/screens/promo/video-02.tv.mp4"
+          ],
+          [
+            "/screens/promo/video-04.tv.mp4",
+            "/screens/promo/video-03.tv.mp4"
+          ],
+          [
+            "/screens/promo/nov16-img-5432-53f500d674.mp4",
+            "/screens/promo/nov16-img-5220-a6c06b6e97.mp4"
+          ]
+        ]
+      }
+    ]
+  ]
+};
 var stage = document.getElementById('stage');
 var clockOffset = 0;
 var drawWide = HonorRotation.deck(LAND);
@@ -46,10 +179,40 @@ var drawVertical = HonorRotation.deck(vert);
 var timers = [];
 var colState = null;
 var stopped = false;
-var pre = { video: null, src: '' };
+var managedBlackout = false;
+var hasStarted = false;
+var nextPack = null;
+
+function assetPath(src){
+  var url = new URL(src, location.origin);
+  return url.origin === location.origin && !url.search && !url.hash ? url.pathname : src;
+}
+
+function setTvProgram(wide, portraits){
+  var keys = portraits.map(assetPath);
+  LAND = wide.map(function(src){ return TV_MEDIA.wide[assetPath(src)] || src; });
+  vert = portraits.map(function(src){ return TV_MEDIA.vertical[assetPath(src)] || src; });
+  drawWide = HonorRotation.deck(LAND);
+  drawVertical = HonorRotation.deck(vert);
+  nextPack = null;
+  var pool = Object.keys(TV_MEDIA.vertical);
+  if (keys.length !== pool.length || !pool.length || !keys.every(function(key){ return pool.indexOf(key) >= 0; })) return;
+  var rounds = HonorRotation.deck(TV_MEDIA.rounds);
+  var pending = [];
+  nextPack = function(){
+    if (!pending.length) {
+      pending = rounds().slice();
+      if (Math.random() < 0.5) pending.reverse();
+    }
+    return pending.pop().url;
+  };
+}
+setTvProgram(LAND, vert);
+
 
 function almatyHour(){ return (new Date(Date.now() + clockOffset).getUTCHours() + 5) % 24; }
 function isNight(){
+  if (managedBlackout) return true;
   if (NIGHT === 'off') return false;
   var parts = NIGHT.split('-');
   var a = +parts[0], b = +parts[1];
@@ -92,35 +255,6 @@ function releaseVideo(v){
   try { v.removeAttribute('src'); v.load(); } catch (e) {}
   if (v.parentNode) v.parentNode.removeChild(v);
 }
-function releasePre(){
-  if (!pre.video) return;
-  releaseVideo(pre.video);
-  pre.video = null;
-  pre.src = '';
-}
-function preload(src){
-  if (!src || pre.src === src) return;
-  releasePre();
-  var v = document.createElement('video');
-  v.muted = true;
-  v.setAttribute('muted', '');
-  v.setAttribute('playsinline', '');
-  v.playsInline = true;
-  v.preload = 'auto';
-  v.src = src;
-  try { v.load(); } catch (e) {}
-  pre.video = v;
-  pre.src = src;
-}
-function takePreload(src){
-  if (pre.src === src && pre.video) {
-    var v = pre.video;
-    pre.video = null;
-    pre.src = '';
-    return v;
-  }
-  return null;
-}
 function clearStage(){
   clearTimers();
   if (colState) {
@@ -136,7 +270,7 @@ function clearStage(){
 }
 
 function makeVideo(src){
-  var v = takePreload(src) || document.createElement('video');
+  var v = document.createElement('video');
   v.muted = true;
   v.setAttribute('muted', '');
   v.setAttribute('playsinline', '');
@@ -157,7 +291,7 @@ function tryPlay(v){
   }
 }
 
-function playFullscreen(urls, then, afterSrc){
+function playFullscreen(urls, then, mosaic){
   if (stopped) return;
   if (!urls || !urls.length) { then(); return; }
   var idx = 0;
@@ -167,7 +301,7 @@ function playFullscreen(urls, then, afterSrc){
     clearStage();
     var src = urls[idx++];
     var v = makeVideo(src);
-    v.className = 'hs-fill';
+    v.className = mosaic ? 'hs-fill hs-mosaic' : 'hs-fill';
     var advanced = false;
     function go(){ if (advanced || stopped || v.parentNode !== stage) return; advanced = true; next(); }
     v.addEventListener('ended', go);
@@ -175,14 +309,14 @@ function playFullscreen(urls, then, afterSrc){
     stage.appendChild(v);
     HonorRotation.watchPlayback(v, function(){ return !advanced && !stopped && v.parentNode === stage; }, go);
     tryPlay(v);
-    var nxt = (idx < urls.length) ? urls[idx] : afterSrc;
-    if (nxt) preload(nxt);
+
   }
   next();
 }
 
 // Keep a separate reservation for each column while clips of different lengths finish.
-function playColumns(then, afterSrc){
+function playColumns(then){
+  if (nextPack) { playFullscreen([nextPack()], then, true); return; }
   if (stopped) return;
   clearStage();
   var row = document.createElement('div');
@@ -195,6 +329,8 @@ function playColumns(then, afterSrc){
     if (stopped || states !== colState) return;
     var s = states[colIdx];
     var item = drawVertical(states.map(function(column){ return column.src; }));
+    // With exactly three portraits the two neighbours reserve the other options.
+    if (!item) item = s.src;
     if (!item) return;
     s.src = item;
     var container = s.el;
@@ -210,17 +346,6 @@ function playColumns(then, afterSrc){
       if (states !== colState || s.video !== video) return;
       clearTimeout(s.timer);
       s.timer = setTimeout(advance, 12000);
-    }
-    var offset = s.first ? +(COL_OFFSETS[colIdx] || 0) : 0;
-    s.first = false;
-    if (offset > 0) {
-      var seek = function(){
-        video.removeEventListener('loadedmetadata', seek);
-        var d = video.duration;
-        if (d && isFinite(d) && offset < d - 1) { try { video.currentTime = offset; } catch (e) {} }
-      };
-      if (video.readyState >= 1) seek();
-      else video.addEventListener('loadedmetadata', seek);
     }
     video.addEventListener('loadeddata', watchdog);
     video.addEventListener('timeupdate', watchdog);
@@ -243,17 +368,17 @@ function playColumns(then, afterSrc){
     el.className = 'hs-col';
     el.setAttribute('data-col', String(i));
     row.appendChild(el);
-    colState.push({ src: null, video: null, timer: null, first: true, el: el });
+    colState.push({ src: null, video: null, timer: null, el: el });
   }
   stage.appendChild(row);
   for (var c = 0; c < 3; c++) playCol(c);
-  if (afterSrc) preload(afterSrc);
 }
 
 function cycle(){
   if (stopped) return;
   if (isNight()) { updateNight(); return; }
-  if (MODE === 'cols') { playColumns(cycle); return; }
+  if (!LAND.length && !vert.length) { clearStage(); return; }
+  if (vert.length && (MODE === 'cols' || !LAND.length)) { playColumns(cycle); return; }
   playWide(drawWide());
 }
 
@@ -261,17 +386,17 @@ function playWide(src){
   if (stopped) return;
   var next = drawWide();
   playFullscreen([src], function(){
-    if (MODE === 'full') playWide(next);
-    else playColumns(function(){ playWide(next); }, next);
-  }, MODE === 'full' ? next : null);
+    if (MODE === 'full' || !vert.length) playWide(next);
+    else playColumns(function(){ playWide(next); });
+  });
 }
 
 function updateNight(){
+  if (!hasStarted) return;
   if (isNight()) {
     if (stopped) return;
     stopped = true;
     clearStage();
-    releasePre();
   } else if (stopped) {
     stopped = false;
     cycle();
@@ -284,5 +409,14 @@ document.addEventListener('click', function(){
   if (!document.fullscreenElement && e.requestFullscreen) e.requestFullscreen().catch(function(){});
 });
 setTimeout(function(){ location.reload(); }, 3600 * 1000);
-syncTimeFirst().then(cycle);
+syncTimeFirst().then(function(){
+  HonorRotation.manage('b', function(media) {
+    setTvProgram(media.wideVideos, media.videos);
+    managedBlackout = media.blackout;
+  }, function() {
+    clearStage();
+    hasStarted = true; stopped = false;
+    cycle();
+  });
+});
 </script></body></html>
