@@ -335,7 +335,7 @@ async function startMediaCache(){
   if (!navigator.serviceWorker) return;
   try {
     const sw = navigator.serviceWorker;
-    const registration = await sw.register('/b/media-cache.js?v=eadbf76f60f85815', {scope:'/b/',updateViaCache:'none'});
+    const registration = await sw.register('/b/media-cache.js?v=470ce4d6970d5e28', {scope:'/b/',updateViaCache:'none'});
     if (!registration || tvWorkerActive()) return;
     await new Promise(resolve => {
       function finish(){ sw.removeEventListener('controllerchange', changed); clearTimeout(timer); resolve(); }

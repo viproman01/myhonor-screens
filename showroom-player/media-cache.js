@@ -79,7 +79,12 @@ async function film(event) {
   source.search = '';
   const canonical = source.href;
   // The marker belongs to the player, never to the CDN cache key.
-  const native = () => fetch(canonical, {headers:request.headers, credentials:'omit', signal:request.signal});
+  // Keep the client-visible URL identical for every range. Returning the CDN
+  // Response directly would make Chrome see a different resource during seeks.
+  const native = async () => {
+    const value = await fetch(canonical, {headers:request.headers, credentials:'omit', signal:request.signal});
+    return new Response(value.body, {status:value.status, statusText:value.statusText, headers:value.headers});
+  };
   const previous = active.get(event.clientId);
   if (previous && previous.url !== request.url) previous.cancel();
   let store;
@@ -104,9 +109,12 @@ async function film(event) {
       (response.headers.has('Content-Encoding') && response.headers.get('Content-Encoding') !== 'identity') ||
       !/^video\/mp4/i.test(response.headers.get('Content-Type') || '')) {
     forget();
-    return response;
+    return new Response(response.body, {status:response.status, headers:response.headers});
   }
-  if (!await makeRoom(store, size).catch(() => false)) { forget(); return response; }
+  if (!await makeRoom(store, size).catch(() => false)) {
+    forget();
+    return new Response(response.body, {headers:response.headers});
+  }
   const headers = response.headers;
   const reader = response.body.getReader();
   const disk = new TransformStream();
