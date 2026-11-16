@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HONOR — экран</title>
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none}
+#stage{position:fixed;inset:0;background:#000}
+html.panel-c #stage{transform:rotate(180deg) scaleX(-1)}
+html.panel-c2 #stage{transform:scaleX(-1)}
+.layer{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .8s}
+.layer.on{opacity:1}
+#hint{position:fixed;left:0;right:0;bottom:0;color:#888;font:14px sans-serif;text-align:center;padding:6px;background:#000a;display:none}
+</style></head><body>
+<div id="stage"></div>
+<div id="hint">Коснитесь экрана один раз — полноэкранный режим</div>
+<script src="/screens/player/rotation.js"></script>
+<script>
+// Плеер экранов магазина. Chrome 88+.
+// Параметры: ?photo=8, ?night=21-9 (чёрный 21:00–09:00), ?night=off
+// Transform на #stage компенсирует сохранённую ориентацию/отзеркаливание Windows на панели.
+const code = location.pathname.split('/')[1] === 'c2' ? 'c2' : 'c';
+document.documentElement.classList.add('panel-' + code);
+document.title = 'HONOR — экран ' + code;
+const P = new URLSearchParams(location.search);
+const PHOTO_SEC = +(P.get('photo')||8);
+const NIGHT = P.get('night')||'21-9';
+const photoUrls = Array.from({length: 11}, function(_, i) {
+  return '/media/photo-' + String(i + 1).padStart(2, '0') + '.jpg';
+});
+const videoUrls = ['05','03','04','01','02'].map(function(code) {
+  return '/media/video-' + code + '.mp4';
+}).concat(HonorRotation.newPortraits);
+const nextPhoto = HonorRotation.deck(photoUrls);
+const nextVideo = HonorRotation.deck(videoUrls);
+let showVideo = true;
+const stage = document.getElementById('stage');
+let timer = null, cur = null, pending = null, clockOffset = 0, sleeping = false;
+function almatyHour(){ return (new Date(Date.now()+clockOffset).getUTCHours()+5)%24; }
+function isNight(){ if(NIGHT==='off')return false; var parts=NIGHT.split('-'); var a=+parts[0],b=+parts[1]; var h=almatyHour(); return a>b ? (h>=a||h<b) : (h>=a&&h<b); }
+function syncTime(){
+  return fetch(location.href,{method:'HEAD',cache:'no-store'}).then(function(r){
+    var serverMs=Date.parse(r.headers.get('Date')||'');
+    if(!isFinite(serverMs)) throw new Error('no-date');
+    clockOffset=serverMs-Date.now();
+  }).catch(function(){ clockOffset=0; });
+}
+function syncTimeFirst(){
+  return new Promise(function(resolve){
+    var done=0; function finish(){ if(done)return; done=1; resolve(); }
+    setTimeout(finish,2000);
+    syncTime().then(finish,finish);
+  });
+}
+setInterval(syncTime,600000);
+function dispose(el) {
+  if (!el) return;
+  el.onended = el.onerror = el.oncanplay = el.onload = null;
+  if (el.tagName === 'VIDEO') { el.pause(); el.removeAttribute('src'); el.load(); }
+  el.remove();
+}
+function show() {
+  clearTimeout(timer);
+  dispose(pending); pending = null;
+  if (isNight()) { setNight(); return; }
+  const video = showVideo;
+  showVideo = !showVideo;
+  const el = video ? document.createElement('video') : new Image();
+  pending = el;
+  el.className = 'layer';
+  function ready() {
+    if (pending !== el) return;
+    pending = null;
+    clearTimeout(timer);
+    const old = cur;
+    cur = el;
+    requestAnimationFrame(function() {
+      if (cur === el) el.classList.add('on');
+      if (old) { old.classList.remove('on'); setTimeout(function(){ dispose(old); }, 900); }
+    });
+    if (video) {
+      el.onended = function(){ if (cur === el && !pending) show(); };
+      function active(){ return cur === el && !pending && !sleeping; }
+      HonorRotation.watchPlayback(el, active, show);
+      el.play().catch(function(){ if (active()) show(); });
+    } else timer = setTimeout(show, PHOTO_SEC * 1000);
+  }
+  el.onerror = function(){
+    if (pending === el || (cur === el && !pending)) { clearTimeout(timer); timer = setTimeout(show, 500); }
+  };
+  if (video) {
+    el.muted = true; el.playsInline = true; el.setAttribute('playsinline','');
+    el.autoplay = true; el.preload = 'auto'; el.oncanplay = ready; el.src = nextVideo();
+  } else { el.onload = ready; el.src = nextPhoto(); }
+  stage.appendChild(el);
+  timer = setTimeout(function(){ if (pending === el) show(); }, 15000);
+}
+function setNight() {
+  if (isNight()) {
+    if (sleeping) return;
+    sleeping = true; clearTimeout(timer);
+    dispose(pending); dispose(cur); pending = cur = null;
+  } else if (sleeping) { sleeping = false; show(); }
+}
+setInterval(setNight, 1000);
+document.addEventListener('click',function(){ var e=document.documentElement; if(!document.fullscreenElement&&e.requestFullscreen)e.requestFullscreen().catch(function(){}); });
+setTimeout(function(){location.reload();}, 3600*1000);
+syncTimeFirst().then(function(){ show(); });
+</script></body></html>
