@@ -13,7 +13,7 @@ html.panel-c2 #stage{transform:scaleX(-1)}
 </style></head><body>
 <div id="stage"></div>
 <div id="hint">Коснитесь экрана один раз — полноэкранный режим</div>
-<script src="/screens/player/rotation.js"></script>
+<script src="/screens/player/rotation.js?v=be4b256f3c3baeb5"></script>
 <script>
 // Плеер экранов магазина. Chrome 88+.
 // Параметры: ?photo=8, ?night=21-9 (чёрный 21:00–09:00), ?night=off
@@ -32,6 +32,7 @@ let photoUrls = Array.from({length: 11}, function(_, i) {
 let videoUrls = ['05','03','04','01','02'].map(function(code) {
   return '/media/video-' + code + '.mp4';
 }).concat(HonorRotation.newPortraits);
+const defaultMedia = {videos: videoUrls.slice(), photos: photoUrls.slice(), blackout: false, photoSeconds: 8};
 let nextPhoto = HonorRotation.deck(photoUrls);
 let nextVideo = HonorRotation.deck(videoUrls);
 let showVideo = true;
@@ -118,6 +119,6 @@ syncTimeFirst().then(function(){
     dispose(cur); dispose(pending); cur = pending = null;
     sleeping = false; showVideo = true;
     show();
-  });
+  }, defaultMedia);
 });
 </script></body></html>

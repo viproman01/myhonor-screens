@@ -47,6 +47,7 @@ test('managed programs require safe media and preserve the number of distinct TV
     assert.equal(normalize({...input, videos:['/media/a','/media/b','/media/b']},'b'),null);
     assert.equal(normalize({...input, wideVideos:['javascript:void(0)']},'b'),null);
     assert.equal(normalize({...input, wideVideos:['/admin/secret']},'b'),null);
+    assert.equal(normalize({...input, wideVideos:['/media/../admin/secret']},'b'),null);
     assert.equal(normalize({...input, wideVideos:['https://user:pwd@example.org/']},'b'),null);
     assert.equal(normalize({...input, code:'c', videos:[], photos:['/media/img.jpg']},'c').photos.length,1);
   } finally { delete global.location; }

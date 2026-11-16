@@ -65,6 +65,7 @@
       var parsed;
       try { parsed = new URL(value, location.origin); } catch (e) { return null; }
       if (parsed.protocol !== 'https:' || parsed.username || parsed.password) return null;
+      if (value.charAt(0) === '/' && !/^\/(?:screens\/promo|media)\//.test(parsed.pathname)) return null;
       if (unique.indexOf(parsed.href) === -1) unique.push(parsed.href);
     }
     return unique;
@@ -85,7 +86,7 @@
 
   // Start even if the shop is unreachable. Cache only a validated media list for this tab.
   // Matching payloads keep the currently playing frame (an unrelated admin edit can change version).
-  function manage(code, configure, start) {
+  function manage(code, configure, start, defaults) {
     var cacheKey = 'honor-showroom-media-v1-' + code;
     var signature = '', started = false, pending = false;
     function accept(raw) {
@@ -112,6 +113,15 @@
       fetch('/api/showroom/' + code + '/playlist', {
         signal: controller.signal, credentials: 'omit', cache: 'no-store'
       }).then(function(response) {
+        if (response.status === 404) {
+          if (signature) {
+            signature = '';
+            try { sessionStorage.removeItem(cacheKey); } catch (e) {}
+            configure(defaults);
+            if (started) start();
+          }
+          return null;
+        }
         if (!response.ok) throw new Error('Playlist unavailable');
         return response.json();
       }).then(accept).catch(function() {}).finally(function() {
